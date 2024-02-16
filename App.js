@@ -58,7 +58,7 @@ export default function App() {
 					placeholder='Address to find...'
 					value={address}
 					onChangeText={(e) => setAddress(e)}
-					style={styles.adressInput}
+					style={styles.addressInput}
 				/>
 				<Button title='Find address' onPress={(e) => fetchLocation(e)} />
 			</View>
@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
 		//alignItems: 'center',
 		justifyContent: 'center',
 	},
-	adressInput: {
+	addressInput: {
 		//width: 300,
 		margin: 0,
 		marginBottom: 10,
