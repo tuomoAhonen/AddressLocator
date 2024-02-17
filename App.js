@@ -3,19 +3,18 @@ import {useEffect, useState} from 'react';
 import {Alert, Button, StyleSheet, Text, TextInput, View} from 'react-native';
 import MapView, {Marker} from 'react-native-maps';
 import Constants from 'expo-constants';
-import * as Location from 'expo-location';
+//import * as Location from 'expo-location';
 
 export default function App() {
 	const [address, setAddress] = useState('');
-	const [title, setTitle] = useState('');
-	const [location, setLocation] = useState({
-		longitude: null,
-		latitude: null,
-		latitudeDelta: null,
-		longitudeDelta: null,
-		defaultLocation: null,
-	});
-	//const [initRegion, setInitRegion] = useState();
+	const [location, setLocation] = useState(null);
+
+	const initRegion = {
+		longitude: 24.9427473,
+		latitude: 60.1674881,
+		latitudeDelta: 1,
+		longitudeDelta: 1,
+	};
 
 	//https://geocode.maps.co/search?q=address&api_key=api_key
 
@@ -29,69 +28,29 @@ export default function App() {
 			);
 			const json = await result.json();
 			//console.log(json[0], json[0].lat, json[0].lon);
-			setTitle(JSON.stringify(json[0].display_name));
-			setAddress('');
-			return setLocation({
-				latitude: parseFloat(json[0].lat),
-				longitude: parseFloat(json[0].lon),
-				latitudeDelta: 0.05,
-				longitudeDelta: 0.05,
-				defaultLocation: false,
-			});
+			return setLocation({latitude: parseFloat(json[0].lat), longitude: parseFloat(json[0].lon)});
 		} catch (error) {
 			console.log(error);
 			return Alert.alert('Address not found', 'Please use correct address');
 		}
 	};
 
-	useEffect(() => {
-		if (location && location.latitude && location.longitude) return;
-
-		(async () => {
-			let {status} = await Location.requestForegroundPermissionsAsync();
-			if (status !== 'granted') {
-				Alert.alert(
-					'Permission to access your location was denied',
-					'Please, change your permissions to locate on app settings'
-				);
-			}
-
-			let initialLocation = await Location.getCurrentPositionAsync({});
-			//console.log(initialLocation);
-			//`https://geocode.maps.co/reverse?lat=${initialLocation.coords.latitude}&lon={initialLocation.coords.longitude}&api_key=${process.env.EXPO_PUBLIC_API_KEY}`
-			const result = await fetch(
-				`https://geocode.maps.co/reverse?lat=${initialLocation.coords.latitude}&lon=${initialLocation.coords.longitude}&api_key=${process.env.EXPO_PUBLIC_API_KEY}`
-			);
-			const json = await result.json();
-			//console.log(json);
-			setTitle(JSON.stringify(json.display_name));
-			setAddress('');
-			return setLocation({
-				longitude: initialLocation.coords.longitude,
-				latitude: initialLocation.coords.latitude,
-				latitudeDelta: 1,
-				longitudeDelta: 1,
-				defaultLocation: true,
-			});
-		})();
-	}, []);
-
 	return (
 		<View style={styles.container}>
-			{location && location.latitude && location.longitude && (
-				<MapView
-					//initialRegion={initRegion}
-					region={{
-						latitude: location && location.latitude && location.latitude,
-						longitude: location && location.longitude && location.longitude,
-						latitudeDelta: location && location.latitudeDelta && location.latitudeDelta,
-						longitudeDelta: location && location.longitudeDelta && location.longitudeDelta,
-					}}
-					style={styles.mapView}
-				>
-					<Marker coordinate={{latitude: location.latitude, longitude: location.longitude}} title={title} />
-				</MapView>
-			)}
+			<MapView
+				//initialRegion={initRegion}
+				region={{
+					latitude: location ? location.latitude : initRegion.latitude,
+					longitude: location ? location.longitude : initRegion.longitude,
+					latitudeDelta: location ? 0.05 : initRegion.latitudeDelta,
+					longitudeDelta: location ? 0.05 : initRegion.longitudeDelta,
+				}}
+				style={styles.mapView}
+			>
+				{location && location.latitude && location.longitude && (
+					<Marker coordinate={{latitude: location.latitude, longitude: location.longitude}} title={address} />
+				)}
+			</MapView>
 			<View style={styles.searchArea}>
 				<TextInput
 					placeholder='Address to find...'
