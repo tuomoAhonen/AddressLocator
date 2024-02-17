@@ -35,8 +35,6 @@ export default function App() {
 		}
 	};
 
-	//console.log(location);
-
 	return (
 		<View style={styles.container}>
 			<MapView
